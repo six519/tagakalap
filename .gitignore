@@ -1,0 +1,4 @@
+*.o
+tagakalap
+example/
+.vscode/
