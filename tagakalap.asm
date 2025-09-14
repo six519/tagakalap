@@ -29,6 +29,7 @@ reading_msg:
 	db			"Reading input. Press Ctrl+C to stop.", 0xa
 reading_msg_len equ $ - reading_msg
 
+; mapping of keys per event code
 keymap: 
 	db 			0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, 0, 0, 0, \
 				'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 0, 0, 0, 0, \
