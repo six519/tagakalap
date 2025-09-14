@@ -2,6 +2,7 @@
 %define SYS_EXIT 60
 %define SYS_WRITE 1
 %define SYS_OPEN 2
+%define SYS_IOCTL 16
 %define STDOUT 1
 %define O_RDONLY 0
 %define EV_KEY 1
@@ -44,6 +45,12 @@ main:
 	cmp			rax, 0
 	jl			error_open
 
+	; set ioctl param (return of open)
+	mov			rdi, rax
+	call		ioctl
+	cmp			rax, 0
+	jl			error_open
+
 	xor			rdi, rdi
 	call		exit
 
@@ -73,6 +80,14 @@ print:
 ; sys_open syscall
 open:
 	mov			rax, SYS_OPEN
+	syscall
+	ret
+
+; sys_ioctl syscall
+ioctl:
+	mov rax, SYS_IOCTL
+	mov rsi, EVIOCGBIT_KEY
+	mov rdx, ev_bits   
 	syscall
 	ret
 
