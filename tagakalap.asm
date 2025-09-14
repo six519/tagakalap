@@ -24,6 +24,26 @@ error_not_keyboard:
 	db			"Not a keyboard device.", 0xa
 error_not_keyboard_len equ $ - error_not_keyboard
 
+reading_msg:
+	db			"Reading input. Press Ctrl+C to stop.", 0xa
+reading_msg_len equ $ - reading_msg
+
+keymap: 
+	db 			0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, 0, 0, 0, \
+				'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 0, 0, 0, 0, \
+				'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 0, 0, 0, 0, 0, \
+				'z', 'x', 'c', 'v', 'b', 'n', 'm', 0, 0, 0, 0, 0, 0, ' ', 0
+keymap_len equ $ - keymap
+
+char1:
+	db			"Character: '"
+
+char2:
+	db			"'", 0xa
+
+evchar:
+	db			0
+
 EVIOCGBIT_KEY equ 0x80000000 | (5 << 16) | ('E' << 8) | (0x21) ; ioctl constant for EVIOCGBIT
 
 	section		.bss
@@ -61,6 +81,11 @@ main:
 	shl			rcx, EV_KEY
 	and			rbx, rcx
 	jz			not_keyboard
+
+	; start reading inputs
+	mov			rsi, reading_msg
+	mov			rdx, reading_msg_len
+	call		print
 
 	xor			rdi, rdi
 	call		exit
