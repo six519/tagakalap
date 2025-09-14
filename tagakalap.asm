@@ -35,6 +35,11 @@ main:
 	jl			no_param
 
 	mov			rdi, [rsi + 8] ; get argv
+
+	; set open syscall params
+	mov			rsi, O_RDONLY
+	mov			rdx, 0
+	; call open syscall
 	call		open
 	cmp			rax, 0
 	jl			error_open
@@ -68,8 +73,6 @@ print:
 ; sys_open syscall
 open:
 	mov			rax, SYS_OPEN
-	mov			rsi, O_RDONLY
-	mov			rdx, 0
 	syscall
 	ret
 
