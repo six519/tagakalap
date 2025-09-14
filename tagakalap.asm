@@ -20,6 +20,10 @@ error_open_msg:
 	db			"Error opening device.", 0xa
 error_open_msg_len equ $ - error_open_msg
 
+error_not_keyboard:
+	db			"Not a keyboard device.", 0xa
+error_not_keyboard_len equ $ - error_not_keyboard
+
 EVIOCGBIT_KEY equ 0x80000000 | (5 << 16) | ('E' << 8) | (0x21) ; ioctl constant for EVIOCGBIT
 
 	section		.bss
@@ -51,6 +55,13 @@ main:
 	cmp			rax, 0
 	jl			error_open
 
+	; check if keyboard device
+	mov			rbx, qword [ev_bits]
+	mov			rcx, 1
+	shl			rcx, EV_KEY
+	and			rbx, rcx
+	jz			not_keyboard
+
 	xor			rdi, rdi
 	call		exit
 
@@ -68,6 +79,14 @@ error_open:
 	mov			rdx, error_open_msg_len
 	call		print
 	mov			rdi, -2
+	call		exit
+
+; not a keyboard error
+not_keyboard:
+	mov			rsi, error_not_keyboard
+	mov			rdx, error_not_keyboard_len
+	call		print
+	mov			rdi, -3
 	call		exit
 
 ; sys_write syscall to print string in stdout
