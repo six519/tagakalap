@@ -1,5 +1,6 @@
 ; preprocessor directives
 %define SYS_EXIT 60
+%define SYS_READ 0
 %define SYS_WRITE 1
 %define SYS_OPEN 2
 %define SYS_IOCTL 16
@@ -39,17 +40,28 @@ keymap_len equ $ - keymap
 
 char1:
 	db			"Character: '"
+char1_len equ $ - char1
 
 char2:
 	db			"'", 0xa
+char2_len equ $ - char2
 
-evchar:
+ev_char:
 	db			0
 
 	section		.bss
 
 ev_bits: ; variable to store ioctl result
-	resb 16
+	resb		16
+
+file_descriptor:
+	resd		1
+
+ev_input:
+	resb		24
+
+buffer:
+	resb		64
 
 	section		.text
 
@@ -68,6 +80,7 @@ main:
 	call		open
 	cmp			rax, 0
 	jl			error_open
+	mov			[file_descriptor], rax
 
 	; set ioctl param (return of open)
 	mov			rdi, rax
@@ -87,6 +100,52 @@ main:
 	mov			rdx, reading_msg_len
 	call		print
 
+read_loop:
+	; read 24 bytes into ev_input
+	mov			rdi, [file_descriptor]
+	mov			rsi, ev_input
+	mov			rdx, 24
+	call		read
+	cmp			rax, 24
+	jne			read_loop
+
+	movzx		rax, word [ev_input + 16]
+	cmp			rax, EV_KEY
+	jne			read_loop
+
+	movzx		rbx, word [ev_input + 20]
+	cmp			rbx, 1
+	jne			read_loop
+
+	movzx		rbx, word [ev_input + 18]
+	cmp			rbx, keymap_len
+	jae			read_loop
+
+	; check keymap
+	mov			rsi, keymap
+	movzx		rax, byte [rsi + rbx]
+	test		rax, rax
+	jz			read_loop
+
+	; set value for printing
+	mov			[ev_char], al
+
+	; print character
+	mov			rsi, char1
+	mov			rdx, char1_len
+	call		print
+
+	mov			rsi, ev_char
+	mov			rdx, 1
+	call		print
+
+	mov			rsi, char2
+	mov			rdx, char2_len
+	call		print
+
+	jmp			read_loop
+
+good_exit: ; it isn't necessary, just want to make the code long :P
 	xor			rdi, rdi
 	call		exit
 
@@ -118,6 +177,12 @@ not_keyboard:
 print:
 	mov			rax, SYS_WRITE
 	mov			rdi, STDOUT
+	syscall
+	ret
+
+; read syscall
+read:
+	mov			rax, SYS_READ
 	syscall
 	ret
 
