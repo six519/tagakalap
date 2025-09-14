@@ -6,6 +6,7 @@
 %define STDOUT 1
 %define O_RDONLY 0
 %define EV_KEY 1
+%define EVIOCGBIT_KEY 0x80000000 | (5 << 16) | ('E' << 8) | (0x21) ; ioctl constant for EVIOCGBIT
 
 	default		rel
 	global 		main ; use main for gcc
@@ -43,8 +44,6 @@ char2:
 
 evchar:
 	db			0
-
-EVIOCGBIT_KEY equ 0x80000000 | (5 << 16) | ('E' << 8) | (0x21) ; ioctl constant for EVIOCGBIT
 
 	section		.bss
 
